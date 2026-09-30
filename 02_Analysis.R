@@ -10,11 +10,14 @@ source('01_Cleaning.R')
 
 # SES profile among adolescents (by basic participants characteristics) -----------
 
-(table01 <- data %>% 
+(table011 <- data %>% 
    select(sex,age_group, in_school, physical_activity,  
           manual_labor, healthy_foods, unhealthy_foods, 
-          excess_unhealthy_foods,ses_level, bmi_category) %>% 
-   tbl_summary( by = ses_level, percent = 'row', label = list(
+          excess_unhealthy_foods,
+          ses_level, 
+          bmi_category) %>% 
+   tbl_summary( by = ses_level, percent = 'column',
+                label = list(
      sex ~ 'Sex',
      age_group ~ 'Age group',
      in_school ~ 'Currently in School',
@@ -31,12 +34,14 @@ source('01_Cleaning.R')
 )
 
 
+
 # Lifestyle factors description ------------------
 (table02 <- data %>% 
    select(living_with, substance_use, alcohol_use, cigarette_smoking,
           literacy, depression_symptoms,
           ses_level, overweight_pr) %>% 
-   tbl_summary( by = ses_level, percent = 'row', label = list(
+   tbl_summary( by = ses_level, percent = 'column', 
+                label = list(
      living_with ~ 'Adults living with',
      substance_use ~ 'Substance use',
      alcohol_use ~ 'Alcohol use',
@@ -50,6 +55,38 @@ source('01_Cleaning.R')
    as_flex_table() 
 )
 
+
+data |> 
+  ggplot()+
+  geom_boxplot(aes( x= ses, y= living_with))
+  
+data |> 
+  ggplot()+
+  geom_boxplot(aes( x = ses, y = substance_use))
+
+data |> 
+  ggplot()+
+  geom_boxplot(aes( x = ses, y = alcohol_use))
+
+data |> 
+  ggplot()+
+  geom_boxplot(aes( x = ses, y = cigarette_smoking))
+
+data |> 
+  ggplot()+
+  geom_boxplot(aes( x = ses, y = literacy))
+
+data |> 
+  ggplot()+
+  geom_boxplot(aes( x = ses, y = depression_symptoms))
+
+data |> 
+  ggplot()+
+  geom_boxplot(aes( x = ses, y = bmi_category))
+
+data |> 
+  ggplot()+
+  geom_histogram(aes( x = ses))
 
 
 
@@ -262,11 +299,32 @@ list_alt <- list(table_univ_alt, table_multi_alt)
 
 
 # 03. Mediation Model
-model00 <- glm(overweight_pr ~ ses_level + gdqs_unhealthy,
+
+model00 <- glm(overweight_pr ~ ses_level,
                data = data, family = binomial())
 summary(model00)
 round(exp(coef(model00)),2) 
 round(exp(confint(model00)),2)
+
+
+model000 <- glm(overweight_pr ~ ses_level + healthy_foods,
+               data = data, family = binomial())
+summary(model000)
+round(exp(coef(model000)),2) 
+round(exp(confint(model000)),2)
+
+model001 <- glm(overweight_pr ~ ses_level + unhealthy_foods,
+               data = data, family = binomial())
+summary(model001)
+round(exp(coef(model001)),2) 
+round(exp(confint(model001)),2)
+
+model002 <- glm(overweight_pr ~ ses_level + excess_unhealthy_foods,
+                data = data, family = binomial())
+summary(model002)
+round(exp(coef(model002)),2) 
+round(exp(confint(model002)),2)
+
 
 # 04. Final Model diagnostics
 
@@ -281,10 +339,11 @@ car::vif(model_multi) # Variance inflation factor (to assess multicollinearity)
 
 # Saving all the tables and outputs ----------------------
 
-save_as_docx(table01, path = 'output/table01.docx')
+save_as_docx(table011, path = 'output/table01.docx')
 save_as_docx(table02, path = 'output/table02.docx')
 save_as_docx(table06, path = 'output/table06.docx')
 save_as_docx(table06_alt, path = 'output/table06_alt.docx')
+save_as_docx(table011, path = 'output/table011.docx')
 
 # Lara's Subset
 names(raw_data)
